@@ -14,6 +14,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "Screen.h"
+#include "text/FontSet.h"
 
 #include <algorithm>
 
@@ -72,6 +73,8 @@ void Screen::SetZoom(int percent)
 
 	WIDTH = RAW_WIDTH * 100 / EFFECTIVE_ZOOM;
 	HEIGHT = RAW_HEIGHT * 100 / EFFECTIVE_ZOOM;
+
+	FontSet::ResizeFonts(USER_ZOOM / 100.0);
 }
 
 

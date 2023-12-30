@@ -1,7 +1,10 @@
 add_library(EndlessSkyLib OBJECT)
 
 # Set the appropriate compiler flags.
-target_include_directories(EndlessSkyLib PUBLIC "${LIBMAD_INCLUDE_DIR}")
+target_include_directories(EndlessSkyLib PUBLIC
+	"${LIBMAD_INCLUDE_DIR}"
+	"${LIBFRIBIDI_INCLUDE_DIR}"
+)
 if(MSVC)
 	target_compile_options(EndlessSkyLib PUBLIC "/W3" "/permissive-" "/sdl" "/GR-" "/analyze-"
 		"-Wno-nonportable-include-path" "$<$<CONFIG:Release>:/Gy;/Oi>")
@@ -356,6 +359,12 @@ target_sources(EndlessSkyLib PRIVATE
 	text/FontSet.h
 	text/Format.cpp
 	text/Format.h
+	text/FtFont.cpp
+	text/FtFont.h
+	text/GlyphCache.cpp
+	text/GlyphCache.h
+	text/GlyphString.cpp
+	text/GlyphString.h
 	text/Table.cpp
 	text/Table.h
 	text/Utf8.cpp

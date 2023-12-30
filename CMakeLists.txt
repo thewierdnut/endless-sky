@@ -22,6 +22,8 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_DEBUG FALSE)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
 # On Linux use relative RPATH.
 set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
+# Enable compilation database for editing tools that use it.
+set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 # Setup vcpkg.
 if(ES_USE_VCPKG)
@@ -67,6 +69,8 @@ project("Endless Sky" VERSION 0.10.5
 find_package(SDL2 CONFIG REQUIRED)
 find_package(PNG REQUIRED)
 find_package(JPEG REQUIRED)
+find_package(Freetype REQUIRED)
+find_package(Harfbuzz REQUIRED)
 if(NOT APPLE)
 	find_package(GLEW REQUIRED)
 endif()
@@ -84,6 +88,11 @@ endif()
 find_path(LIBMAD_INCLUDE_DIR mad.h)
 find_library(LIBMAD_LIB_DEBUG NAMES mad libmad NAMES_PER_DIR PATHS "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/lib")
 find_library(LIBMAD_LIB_RELEASE NAMES mad libmad NAMES_PER_DIR PATHS "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib")
+
+# FriBidi doesn't have native cmake support
+find_path(LIBFRIBIDI_INCLUDE_DIR fribidi/fribidi.h)
+find_library(LIBFRIBIDI_LIB_DEBUG NAMES fribidi libfribidi NAMES_PER_DIR PATHS "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/lib")
+find_library(LIBFRIBIDI_LIB_RELEASE NAMES fribidi libfribidi NAMES_PER_DIR PATHS "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib")
 
 # Find the MinGW runtime DLLs.
 if(MINGW AND WIN32)
@@ -119,7 +128,10 @@ endif()
 
 # Link with the general libraries.
 target_link_libraries(ExternalLibraries INTERFACE SDL2::SDL2 PNG::PNG JPEG::JPEG OpenAL::OpenAL
-	"$<IF:$<CONFIG:Debug>,${LIBMAD_LIB_DEBUG},${LIBMAD_LIB_RELEASE}>")
+	"$<IF:$<CONFIG:Debug>,${LIBMAD_LIB_DEBUG},${LIBMAD_LIB_RELEASE}>"
+	"$<IF:$<CONFIG:Debug>,${LIBFRIBIDI_LIB_DEBUG},${LIBFRIBIDI_LIB_RELEASE}>"
+	Freetype::Freetype
+	harfbuzz::harfbuzz)
 
 # Link the needed OS-specific dependencies, if any.
 if(WIN32)

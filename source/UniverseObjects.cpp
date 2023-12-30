@@ -22,6 +22,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "Logger.h"
 #include "Sprite.h"
 #include "SpriteSet.h"
+#include "text/FontSet.h"
 
 #include <algorithm>
 #include <iterator>
@@ -487,6 +488,8 @@ void UniverseObjects::LoadFile(const string &path, bool debugMode)
 			else
 				node.PrintTrace("Invalid use of keyword \"disable\" for class \"" + category + "\"");
 		}
+		else if(key == "font")
+			FontSet::Load(node);
 		else
 			node.PrintTrace("Skipping unrecognized root object:");
 	}

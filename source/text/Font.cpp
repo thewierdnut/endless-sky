@@ -207,7 +207,7 @@ void Font::DrawAliased(const string &str, double x, double y, const Color &color
 
 int Font::Width(const string &str, char after) const
 {
-	return WidthRawString(str.c_str(), after);
+	return WidthRawString(str, after);
 }
 
 
@@ -216,7 +216,7 @@ int Font::FormattedWidth(const DisplayText &text, char after) const
 {
 	int width = -1;
 	const string truncText = TruncateText(text, width);
-	return width < 0 ? WidthRawString(truncText.c_str(), after) : width;
+	return width < 0 ? WidthRawString(truncText, after) : width;
 }
 
 
@@ -383,19 +383,18 @@ void Font::SetUpShader(float glyphW, float glyphH)
 
 
 
-int Font::WidthRawString(const char *str, char after) const noexcept
+int Font::WidthRawString(const std::string &str, char after) const noexcept
 {
 	int width = 0;
 	int previous = 0;
 	bool isAfterSpace = true;
-
-	for( ; *str; ++str)
+	for (char s: str)
 	{
-		if(*str == '_')
+		if(s == '_')
 			continue;
 
-		int glyph = Glyph(*str, isAfterSpace);
-		if(*str != '"' && *str != '\'')
+		int glyph = Glyph(s, isAfterSpace);
+		if(s != '"' && s != '\'')
 			isAfterSpace = !glyph;
 		if(!glyph)
 			width += space;
@@ -588,4 +587,19 @@ string Font::TruncateMiddle(const string &str, int &width) const
 	}
 	width = firstWidth;
 	return str;
+}
+
+
+
+void Font::SetMetrics(int height, int space)
+{
+	this->height = height;
+	this->space = space;
+}
+
+
+
+bool Font::DrawUnderlines()
+{
+	return showUnderlines;
 }

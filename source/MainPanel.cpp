@@ -45,6 +45,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "UI.h"
 
 #include "opengl.h"
+#include "text/GlyphString.h"
 
 #include <cmath>
 #include <sstream>
@@ -152,6 +153,8 @@ void MainPanel::Draw()
 			loadSum = 0.;
 			loadCount = 0;
 		}
+
+		FontSet::Get(14).Draw("أعتذر عن إجبارك على قراءة هذا النص المترجم تلقائيًا.", Point(10., Screen::Height() * -.5 + 25.), Color(1.0));
 	}
 }
 

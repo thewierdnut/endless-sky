@@ -37,6 +37,7 @@ class Font {
 public:
 	Font() noexcept = default;
 	explicit Font(const std::string &imagePath);
+	virtual ~Font() = default;
 
 	void Load(const std::string &imagePath);
 
@@ -45,7 +46,7 @@ public:
 	void DrawAliased(const DisplayText &text, double x, double y, const Color &color) const;
 	// Draw the given text string, e.g. post-formatting (or without regard to formatting).
 	void Draw(const std::string &str, const Point &point, const Color &color) const;
-	void DrawAliased(const std::string &str, double x, double y, const Color &color) const;
+	virtual void DrawAliased(const std::string &str, double x, double y, const Color &color) const;
 
 	// Determine the string's width, without considering formatting.
 	int Width(const std::string &str, char after = ' ') const;
@@ -59,13 +60,17 @@ public:
 	static void ShowUnderlines(bool show) noexcept;
 
 
+protected:
+	virtual int WidthRawString(const std::string &s, char after = ' ') const noexcept;
+	void SetMetrics(int height, int space);
+	static bool DrawUnderlines();
+
+
 private:
 	static int Glyph(char c, bool isAfterSpace) noexcept;
 	void LoadTexture(ImageBuffer &image);
 	void CalculateAdvances(ImageBuffer &image);
 	void SetUpShader(float glyphW, float glyphH);
-
-	int WidthRawString(const char *str, char after = ' ') const noexcept;
 
 	std::string TruncateText(const DisplayText &text, int &width) const;
 	std::string TruncateBack(const std::string &str, int &width) const;
