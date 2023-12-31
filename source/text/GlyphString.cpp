@@ -39,18 +39,24 @@ namespace
 
 		// Step 2. Apply bidi algorithm to convert the text to identical direction runs.
 		std::vector<FriBidiChar> visualText(utext.size());
+		std::vector<FriBidiStrIndex> visual2logical(utext.size());
 		// TYPE_ON means figure it out based on text. It will take its cue from
 		// the first strong character it finds, and reset baseDir to indicate the
 		// direction of the output text.
 		FriBidiCharType baseDir = FRIBIDI_TYPE_ON;
-		// TODO: should we save off the ltov/vtol offsets and process text one segment at a time?
-		fribidi_log2vis(utext.data(), utext.size(), &baseDir, visualText.data(), nullptr, nullptr, nullptr);
+		fribidi_log2vis(utext.data(), utext.size(), &baseDir, nullptr, nullptr, visual2logical.data(), nullptr);
+		// Manually compute visualText instead of letting fribidi do it for us,
+		// as fribidi will also sometimes swap out the characters for codes that
+		// we don't have in our test fonts. Harfbuzz will do the relevant shaping
+		// for us instead.
+		for(size_t i = 0; i < utext.size(); ++i)
+			visualText[i] = utext[visual2logical[i]];
 
 		// Step 3. For mixed-script text, we will need to break up the text
 		// according to the valid fonts supported.
 		std::vector<std::pair<const FontSet::FontInfo*, std::vector<FriBidiChar>>> textRuns;
 		const FontSet::FontInfo* lastFont = nullptr;
-		for (FriBidiChar c: utext)
+		for (FriBidiChar c: visualText)
 		{
 			if(!lastFont || !lastFont->HasUnicodeChar(c))
 			{
@@ -78,9 +84,9 @@ namespace
 			hb_buffer_add_utf32(hbBuffer.get(), run.second.data(), run.second.size(), 0, -1);
 			hb_buffer_guess_segment_properties(hbBuffer.get());
 			// TODO: Top to bottom text?
-			hb_buffer_set_direction(hbBuffer.get(), FRIBIDI_IS_RTL(baseDir) ? HB_DIRECTION_RTL : HB_DIRECTION_LTR);
-			//hb_buffer_set_script(hbBuffer.get(), HB_SCRIPT_ARABIC);
-
+			// We've already run BIDI on this, so explicitly set LTR direction so
+			// that harfbuzz doesn't reverse it again.
+			hb_buffer_set_direction(hbBuffer.get(), HB_DIRECTION_LTR);
 			hb_shape(run.first->hbFont.get(), hbBuffer.get(), NULL, 0);
 
 			// Iterate through the glyphs and save them.
@@ -94,10 +100,10 @@ namespace
 				glyph.glyphId = glyphInfo[i].codepoint;
 				glyph.font = run.first;
 				glyph.rightToLeft = FRIBIDI_IS_RTL(baseDir);
-				glyph.advanceX = glyphPos[i].x_advance; // run.first->scale;
-				glyph.advanceY = glyphPos[i].y_advance; // run.first->scale;
-				glyph.offsetX = glyphPos[i].x_offset; // run.first->scale;
-				glyph.offsetY = glyphPos[i].y_offset; // run.first->scale;
+				glyph.advanceX = glyphPos[i].x_advance / run.first->scale;
+				glyph.advanceY = glyphPos[i].y_advance / run.first->scale;
+				glyph.offsetX = glyphPos[i].x_offset / run.first->scale;
+				glyph.offsetY = glyphPos[i].y_offset / run.first->scale;
 				ret.emplace_back(glyph);
 			}
 		}

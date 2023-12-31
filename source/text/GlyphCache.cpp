@@ -91,6 +91,9 @@ void GlyphCache::Init()
 
 		// Multiply the texture by the user-specified color (including alpha).
 		"void main() {\n"
+		// "  float value = texture(tex, texCoord).a;\n"
+		// "  float intensity = (color.r + color.g + color.b) / 3.0;\n"
+		// "  finalColor =  vec4(color.rgb * value, min(value, intensity));\n"
 		"  finalColor = texture(tex, texCoord).a * color;\n"
 		"}\n";
 

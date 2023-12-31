@@ -23,6 +23,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "../DataNode.h"
 #include "../Files.h"
 
+#include <SDL_log.h>
 #include <harfbuzz/hb-ft.h>
 #include <freetype/freetype.h>
 
@@ -71,7 +72,9 @@ namespace {
 			itFontData = fontData.end() - 1;
 		}
 
-		// Load the freetype face
+		// Load the freetype face. This does not need a smart pointer, as
+		// the freeType global object will destroy all faces when
+		// FT_Done_FreeType gets called.
 		FT_Face face;
 		FT_Error err = FT_New_Memory_Face(
 			freeType.get(),
@@ -82,7 +85,7 @@ namespace {
 		);
 		if(err)
 			return "Unable to load font (Freetype returned " + std::to_string(err) + ")";
-		std::shared_ptr<struct FT_FaceRec_> pface(face, FT_Done_Face);
+
 
 		// Now that we have the face loaded, we can compute default unicode ranges
 		// if they were left blank.
@@ -144,12 +147,12 @@ namespace {
 		info.pixelSize = pixelSize;
 		info.scale = 1.0;
 
-		FT_Set_Pixel_Sizes(pface.get(), 0, pixelSize);
-		info.face.swap(pface);
-		info.hbFont.reset(hb_ft_font_create(info.face.get(), nullptr), hb_font_destroy);
-		hb_ft_font_set_funcs(info.hbFont.get());
+		FT_Set_Pixel_Sizes(face, 0, pixelSize);
+		info.face = face;
+		info.hbFont.reset(hb_ft_font_create(info.face, nullptr), hb_font_destroy);
+		//hb_ft_font_set_funcs(info.hbFont.get());
 
-		info.cache = std::make_unique<GlyphCache>(info.face.get());
+		info.cache = std::make_unique<GlyphCache>(info.face);
 
 		// keep the fonts sorted by priority
 		auto &fontSet = ftFonts[static_cast<int>(size)];
@@ -285,7 +288,8 @@ void FontSet::Load(const DataNode &node)
 	for(auto& s: sizes)
 	{
 		std::string errStr = LoadFont(path, priority, s.first, s.second, ranges);
-		node.PrintTrace(errStr + ":");
+		if(!errStr.empty())
+			node.PrintTrace(errStr + ":");
 	}
 }
 
@@ -339,10 +343,9 @@ void FontSet::ResizeFonts(double zoom)
 		{
 			// Round the font size to the nearest pixel.
 			int pixelSize = font.pixelSize * zoom + .5;
-			FT_Set_Pixel_Sizes(font.face.get(), 0, pixelSize);
-			// FT_Set_Char_Size(font.face.get(), 0, font.pixelSize * fontZoom * 64, 0, 0);
+			FT_Set_Pixel_Sizes(font.face, 0, pixelSize);
 			hb_ft_font_changed(font.hbFont.get());
-			font.cache = std::make_unique<GlyphCache>(font.face.get());
+			font.cache = std::make_unique<GlyphCache>(font.face);
 			// Set the scale to reflect the zoom level used.
 			font.scale = static_cast<float>(pixelSize) / font.pixelSize;
 		}

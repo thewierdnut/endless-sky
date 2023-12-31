@@ -38,7 +38,7 @@ public:
 		int pixelSize;
 		float scale;
 		std::vector<std::pair<uint32_t, uint32_t>> codepointRanges;
-		std::shared_ptr<struct FT_FaceRec_> face;
+		struct FT_FaceRec_* face;  // Smart pointer not needed.
 		std::shared_ptr<struct hb_font_t> hbFont;
 		std::unique_ptr<GlyphCache> cache;
 
