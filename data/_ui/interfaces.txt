@@ -12,17 +12,17 @@
 # this program. If not, see <https://www.gnu.org/licenses/>.
 
 # Colors used to reflect the active or hovered interface button.
-color "hover" 1. 1. 1. 0.
-color "active" .75 .75 .75 0.
-color "inactive" .25 .25 .25 0.
+color "hover" 1. 1. 1. 1.
+color "active" .75 .75 .75 1.
+color "inactive" .25 .25 .25 1.
 
 # Colors generally used for drawing text or lines.
-color "bright" .75 .75 .75 0.
-color "medium" .5 .5 .5 0.
-color "dim" .25 .25 .25 0.
-color "dimmer" .18 .18 .18 0.
-color "faint" .1 .1 .1 0.
-color "dark" .05 .05 .05 0.
+color "bright" .75 .75 .75 1.
+color "medium" .5 .5 .5 1.
+color "dim" .25 .25 .25 1.
+color "dimmer" .18 .18 .18 1.
+color "faint" .1 .1 .1 1.
+color "dark" .05 .05 .05 1.
 
 # Colors used for drawing ship list in player info panel.
 color "flagship" .5 .5 .1 0.

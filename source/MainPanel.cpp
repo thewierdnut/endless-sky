@@ -154,7 +154,7 @@ void MainPanel::Draw()
 			loadCount = 0;
 		}
 
-		FontSet::Get(14).Draw("أعتذر عن إجبارك على قراءة هذا النص المترجم تلقائيًا.", Point(10., Screen::Height() * -.5 + 25.), Color(.5));
+		FontSet::Get(14).Draw("أعتذر عن إجبارك على قراءة هذا النص المترجم تلقائيًا.", Point(10., Screen::Height() * -.5 + 25.), color);
 		//FontSet::Get(14).Draw("لا تستطيع الفتيات تناول 15 بيتزا.", Point(10., Screen::Height() * -.5 + 25.), color);
 	}
 }
