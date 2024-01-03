@@ -36,6 +36,7 @@ public:
 		const FontSet::FontInfo* font;
 		int glyphId;
 		bool rightToLeft;
+		bool underlined;
 
 		int offsetX;
 		int offsetY;

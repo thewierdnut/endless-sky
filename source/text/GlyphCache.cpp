@@ -193,7 +193,12 @@ void GlyphCache::Draw(const GlyphString::Glyph& g, const Point& pos, const Color
 	//}
 	//prev_c = cc.glyph_index;
 
-	glUniform4f(positionI, pos.X() + gi.left  / g.font->scale, pos.Y() - gi.top / g.font->scale, gi.src_w * (BITMAP_SIZE / g.font->scale), gi.src_h * (BITMAP_SIZE / g.font->scale));
+	glUniform4f(positionI,
+		pos.X() + gi.left  / g.font->scale,
+		pos.Y() - gi.top / g.font->scale,
+		gi.src_w * (BITMAP_SIZE / g.font->scale),
+		gi.src_h * (BITMAP_SIZE / g.font->scale)
+	);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 

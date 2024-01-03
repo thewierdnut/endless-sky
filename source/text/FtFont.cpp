@@ -18,6 +18,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include <string>
 
 #include "../Color.h"
+#include "../FillShader.h"
 #include "GlyphCache.h"
 #include "GlyphString.h"
 #include "../Point.h"
@@ -27,9 +28,7 @@ namespace {
 	const int KERN = 2;
 }
 
-/**
- * Load a given ttf file using freetype
- */
+// Load a given ttf file using freetype.
 FtFont::FtFont(const std::string& path, int size):
 	fontSize(size)
 {
@@ -38,18 +37,7 @@ FtFont::FtFont(const std::string& path, int size):
 
 
 
-/**
- * Destructor. Free up freetype resources
- */
-FtFont::~FtFont()
-{
-}
-
-
-
-/**
- * Compute the rendered width of the text
- */
+// Compute the rendered width of the text.
 int FtFont::WidthRawString(const std::string& str, char after) const noexcept
 {
 	return GlyphString(str, fontSize == 14 ? FontSize::NORMAL : FontSize::LARGE).RenderedWidth();
@@ -57,9 +45,7 @@ int FtFont::WidthRawString(const std::string& str, char after) const noexcept
 
 
 
-/**
- * Draw the text
- */
+// Draw the text.
 void FtFont::DrawAliased(const std::string &str, double x, double y, const Color &color) const
 {
 	GlyphString gs(str, fontSize == 14 ? FontSize::NORMAL : FontSize::LARGE);
@@ -67,9 +53,15 @@ void FtFont::DrawAliased(const std::string &str, double x, double y, const Color
 	pos *= 64; // Convert to font units.
 	for(auto &g: gs.Glyphs())
 	{
-		Point offset;
-		//Point offset(g.offsetX / 64.0, g.offsetY / 64.0);
-		g.font->cache->Draw(g, pos / 64 + offset, color);
+		Point offset(g.offsetX, g.offsetY);
+		g.font->cache->Draw(g, (pos + offset) / 64, color);
+		if(DrawUnderlines() && g.underlined)
+		{
+			Point underlinePos(pos + Point(g.advanceX, g.advanceY) / 2);
+			underlinePos /= 64;
+			underlinePos.Y() += KERN;
+			FillShader::Fill(underlinePos, Point(g.advanceX/64, 1), color);
+		}
 		pos += Point(g.advanceX, g.advanceY);
 	}
 }

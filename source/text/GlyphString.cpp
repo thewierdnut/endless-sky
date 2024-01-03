@@ -28,7 +28,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 namespace
 {
-	std::vector<GlyphString::Glyph> ProcessUtf8Text(const std::string& text, FontSize s)
+	std::vector<GlyphString::Glyph> ProcessUtf8Text(const std::string &text, FontSize s)
 	{
 		// Step 1. Convert from utf8 to unicode code points.
 		std::vector<FriBidiChar> utext;
@@ -38,6 +38,7 @@ namespace
 			utext.push_back(c);
 
 		// Step 2. Apply bidi algorithm to convert the text to identical direction runs.
+		// TODO: use stack instead of heap for these?
 		std::vector<FriBidiChar> visualText(utext.size());
 		std::vector<FriBidiStrIndex> visual2logical(utext.size());
 		// TYPE_ON means figure it out based on text. It will take its cue from
@@ -58,6 +59,14 @@ namespace
 		const FontSet::FontInfo* lastFont = nullptr;
 		for (FriBidiChar c: visualText)
 		{
+			if(c == '_')
+			{
+				// Push back an empty text run to indicate that the next character
+				// needs to be underlined.
+				textRuns.emplace_back(nullptr, std::vector<FriBidiChar>{});
+				lastFont = nullptr;
+				continue;
+			}
 			if(!lastFont || !lastFont->HasUnicodeChar(c))
 			{
 				if(!(lastFont = FontSet::FontForUnicodeChar(c, s)))
@@ -78,12 +87,23 @@ namespace
 		std::vector<GlyphString::Glyph> ret;
 		ret.reserve(visualText.size());
 		std::shared_ptr<hb_buffer_t> hbBuffer(hb_buffer_create(), hb_buffer_destroy);
+		bool underlineNext = false;
 		for(auto &run: textRuns)
 		{
+			if(run.first == nullptr)
+			{
+				// This indicates that the next character (or previous for RTL)
+				// needs to be underlined
+				if(FRIBIDI_IS_RTL(baseDir) && !ret.empty())
+					ret.back().underlined = true;
+				else
+					underlineNext = true;
+				continue;
+			}
 			hb_buffer_clear_contents(hbBuffer.get());
 			hb_buffer_add_utf32(hbBuffer.get(), run.second.data(), run.second.size(), 0, -1);
 			hb_buffer_guess_segment_properties(hbBuffer.get());
-			// TODO: Top to bottom text?
+			// TODO: vertical text?
 			// We've already run BIDI on this, so explicitly set LTR direction so
 			// that harfbuzz doesn't reverse it again.
 			hb_buffer_set_direction(hbBuffer.get(), HB_DIRECTION_LTR);
@@ -100,6 +120,8 @@ namespace
 				glyph.glyphId = glyphInfo[i].codepoint;
 				glyph.font = run.first;
 				glyph.rightToLeft = FRIBIDI_IS_RTL(baseDir);
+				glyph.underlined = underlineNext;
+				underlineNext = false;
 				glyph.advanceX = glyphPos[i].x_advance / run.first->scale;
 				glyph.advanceY = glyphPos[i].y_advance / run.first->scale;
 				glyph.offsetX = glyphPos[i].x_offset / run.first->scale;

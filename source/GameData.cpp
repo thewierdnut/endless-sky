@@ -33,8 +33,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "FormationPattern.h"
 #include "Galaxy.h"
 #include "GameEvent.h"
-#include "Government.h"
 #include "text/GlyphCache.h"
+#include "Government.h"
 #include "Hazard.h"
 #include "ImageSet.h"
 #include "Interface.h"
@@ -211,8 +211,6 @@ void GameData::LoadSettings()
 
 void GameData::LoadShaders()
 {
-	//FontSet::Add(Files::Images() + "font/ubuntu14r.png", 14);
-	//FontSet::Add(Files::Images() + "font/ubuntu18r.png", 18);
 	FontSet::Add(Files::Images() + "font/Ubuntu-R.ttf", 14);
 	FontSet::Add(Files::Images() + "font/Ubuntu-R.ttf", 18);
 

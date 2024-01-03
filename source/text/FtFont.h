@@ -26,7 +26,6 @@ class FtFont: public Font
 {
 public:
 	FtFont(const std::string& path, int size);
-	virtual ~FtFont();
 
 	virtual void DrawAliased(const std::string &str, double x, double y, const Color &color) const override;
 
